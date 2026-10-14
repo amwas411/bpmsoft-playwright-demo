@@ -33,9 +33,12 @@ import { Controller } from './controller';
     await controller.setColumnValue("Тема", subject, false);
     await controller.setColumnValue("Контакт", contact, true);
 
-    await controller.clickButton("Сохранить");
-    let response = await page.waitForResponse(/InsertQuery/);
-    expect(response.ok());
+    const [response] = await Promise.all([
+      page.waitForResponse(response =>
+        response.url().includes('InsertQuery') && response.request().method() === 'POST'),
+      controller.clickButton("Сохранить"),
+    ]);
+    expect(response.ok()).toBe(true);
 
     await expect(controller.getColumnInput("Тема")).toHaveValue(subject);
     await expect(controller.getColumnInput("Контакт")).toHaveValue(contact);

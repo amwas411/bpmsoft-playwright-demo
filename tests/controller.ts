@@ -1,4 +1,3 @@
-import dotenv from 'dotenv';
 import { expect, Page, Locator } from '@playwright/test';
 import assert from "assert";
 
@@ -49,7 +48,7 @@ export class Controller {
   getColumn(columnCaption: string | undefined) {
     assert(columnCaption);
 
-    return this._page.locator(`.control-wrap div[data-item-marker$=${columnCaption}]`);
+    return this._page.locator(`.control-wrap div[data-item-marker$=${JSON.stringify(columnCaption)}]`);
   }
 
   async setColumnValue(columnCaption: string | undefined, columnValue: string | undefined, isLookup: boolean) {
@@ -59,9 +58,11 @@ export class Controller {
     await this.getColumnInput(columnCaption).fill(columnValue);
 
     if (isLookup) {
-      await this.openColumnLookup(this.getColumn(columnCaption))
-        .then(() => this._page.locator(`#grid-grid-wrap [data-item-marker=${columnValue}]`).click())
-        .then(() => this.clickButton("Выбрать"));
+      await this.openColumnLookup(this.getColumn(columnCaption));
+      const lookupGrid = this._page.locator('#grid-grid-wrap');
+      await lookupGrid.locator(`[data-item-marker=${JSON.stringify(columnValue)}]`).click();
+      await this.clickButton("Выбрать");
+      await expect(lookupGrid).toBeHidden();
     }
   }
 
