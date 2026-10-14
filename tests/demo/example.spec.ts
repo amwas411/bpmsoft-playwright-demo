@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { Controller } from './controller';
+import { Controller } from '../controller';
 
 [
   { workplace: "Продажи", section: "Итоги" },
