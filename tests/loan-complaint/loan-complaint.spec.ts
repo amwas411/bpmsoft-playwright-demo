@@ -17,9 +17,9 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
 
   await test.step('2–3: log in as the queue operator and open Обращения', async () => {
     await controller.login(process.env.login, process.env.password);
+    await controller.openSectionInWorkplace('Сотрудник', 'Обращения');
     await expect(page.getByRole('treeitem', { name: 'Обращения', exact: true })).toBeVisible();
     await expect(page.getByRole('treeitem', { name: 'Единое окно', exact: true })).toBeVisible();
-    await workflow.openSection('Обращения');
     await expect(workflow.button('Добавить обращение')).toBeVisible();
   });
 
@@ -96,11 +96,11 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
     await expect(page.locator('[data-item-marker="CasePageContainer"]')).toBeHidden();
   });
 
-  await test.step('14: wait 90 seconds, then locate the complaint in the queue', async () => {
-    // Step 14 explicitly allows the background queue-filling job 90 seconds
+  await test.step('14: wait 120 seconds, then locate the complaint in the queue', async () => {
+    // Step 14 explicitly allows the background queue-filling job 120 seconds
     // before opening the section, which loads its queue items on entry.
-    await page.waitForTimeout(90 * 1000);
-    await workflow.openSection('Единое окно');
+    await page.waitForTimeout(120 * 1000);
+    await controller.openSectionInWorkplace('Сотрудник', 'Единое окно');
     await workflow.openTab('Обращения');
     // This UI groups queue items under the entity tab rather than rendering
     // queue names as selectable controls.
@@ -119,7 +119,7 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
   });
 
   await test.step('18–20: reopen the complaint and move from Заведено to На рассмотрении', async () => {
-    await workflow.openSection('Обращения');
+    await controller.openSectionInWorkplace('Сотрудник', 'Обращения');
     await expect(workflow.record(caseNumber)).toBeVisible();
     await workflow.openRecord(caseNumber);
     await workflow.expectStage('Заведено');
