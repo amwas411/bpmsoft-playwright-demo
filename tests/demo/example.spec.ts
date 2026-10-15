@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test';
 import { Controller } from '../controller';
 
 [
-  { workplace: "Продажи", section: "Итоги" },
-  { workplace: "Сервис", section: "Контакты" },
+  { workplace: "Сотрудник", section: "Контакты" },
 ].forEach(({ workplace, section }) =>
 
   test(`section ${section} in the ${workplace} workplace opens`, async ({ page }) => {
@@ -16,7 +15,7 @@ import { Controller } from '../controller';
 );
 
 [
-  { workplace: "Сервис", section: "Обращения" },
+  { workplace: "Сотрудник", section: "Обращения" },
 ].forEach(({ workplace, section }) =>
 
   test("fill up a case", async ({ page }) => {
@@ -24,24 +23,37 @@ import { Controller } from '../controller';
     await controller.login(process.env.login, process.env.password);
     await controller.openSectionInWorkplace(workplace, section);
 
-    // Click "Добавить обращение" / "Добавить" in the section toolbar.
-    await controller.clickButton("Добавить");
+    await controller.clickButton("Добавить обращение", true);
+    const heading = page.getByText(/^Обращение №\S+$/);
+    await expect(heading).toBeVisible();
+    const caseNumber = (await heading.innerText()).replace(/^Обращение №/, '').trim();
 
-    // Fill the "Тема" field.
-    const subject = `Автотест обращение ${Date.now()}`;
     const contact = "uitestadmin";
-    await controller.setColumnValue("Тема", subject, false);
-    await controller.setColumnValue("Контакт", contact, true);
+    const level = "Доп. офисы /  Branches";
+    const description = "Описание";
+    const channel = "SMS";
+    const type = "Автокредит/ Car loan";
+    await controller.selectDropdown("Категория", "Благодарность");
+    await controller.selectLookup("Заявитель", contact);
+    await controller.setColumnValue("Уровень 1", level, true);
+    await controller.openTab("Информация по обращению");
+    await controller.fill("Описание", description);
+    await controller.selectDropdown("Канал ответа", channel);
+    await controller.selectLookup("Тип продукта", type);
 
-    const [response] = await Promise.all([
-      page.waitForResponse(response =>
-        response.url().includes('InsertQuery') && response.request().method() === 'POST'),
-      controller.clickButton("Сохранить"),
-    ]);
-    expect(response.ok()).toBe(true);
+    await controller.save('InsertQuery');
+    await expect(page.locator('[data-item-marker="CasePageContainer"]')).toBeHidden();
+    await controller.clearSectionFilters();
+    await controller.openRecord(caseNumber);
+    await controller.openTab("Информация по обращению");
 
-    await expect(controller.getColumnInput("Тема")).toHaveValue(subject);
-    await expect(controller.getColumnInput("Контакт")).toHaveValue(contact);
+    await expect(controller.input("Заявитель")).toHaveValue(contact);
+    // The stored name has two spaces; the lookup UI collapses them on display.
+    await expect.poll(async () => (await controller.input("Уровень 1").inputValue())
+      .replace(/\s+/g, ' ')).toBe(level.replace(/\s+/g, ' '));
+    await expect(controller.input("Описание")).toHaveValue(description);
+    await expect(controller.input("Канал ответа")).toHaveValue(channel);
+    await expect(controller.input("Тип продукта")).toHaveValue(type);
   })
 
 );

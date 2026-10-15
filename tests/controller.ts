@@ -68,14 +68,19 @@ export class Controller {
     assert(columnCaption);
     assert(columnValue);
 
-    await this.getColumnInput(columnCaption).fill(columnValue);
-
     if (isLookup) {
+      // Open the lookup before typing: autocomplete can replace the input's
+      // stored name with its normalized caption and seed an incorrect filter.
       await this.openColumnLookup(this.getColumn(columnCaption));
       const lookupGrid = this._page.locator('#grid-grid-wrap');
-      await lookupGrid.locator(`[data-item-marker=${JSON.stringify(columnValue)}]`).click();
+      // The lookup renderer collapses whitespace in row captions/markers even
+      // when the stored name contains repeated spaces. Text matching applies
+      // the same normalization without changing the supplied lookup value.
+      await lookupGrid.getByText(columnValue, { exact: true }).click();
       await this.clickButton("Выбрать");
       await expect(lookupGrid).toBeHidden();
+    } else {
+      await this.getColumnInput(columnCaption).fill(columnValue);
     }
   }
 
