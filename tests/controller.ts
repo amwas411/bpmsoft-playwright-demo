@@ -240,6 +240,19 @@ export class Controller {
         await this.openTab('Обращения');
       }
       firstAttempt = false;
+      const rows = this._page.locator('#grid-QueuePageDataGridGrid-wrap .grid-listed-row');
+      await rows.first().waitFor();
+      while (await this.record(number).count() === 0) {
+        const count = await rows.count();
+        await rows.last().scrollIntoViewIfNeeded();
+        // Scrolling to the last loaded row requests the next page of the queue.
+        const loadedMore = await expect(rows).not.toHaveCount(count, { timeout: 3000 })
+          .then(() => true, () => false);
+        if (!loadedMore) break;
+      }
+      if (await this.record(number).count() > 0) {
+        await this.record(number).scrollIntoViewIfNeeded();
+      }
       await expect(this.record(number), `Complaint ${number} should appear in queue «${queue}»`)
         .toBeVisible({ timeout: 3000 });
       await expect(this.record(number)).toHaveAttribute('data-item-marker', queue);

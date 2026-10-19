@@ -9,9 +9,9 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
   const employee = 'Сидорова Анна Викторовна';
   const applicant = 'Иванов Иван Иванович';
   const queue = 'Жалобы и операционные запросы по кредитам';
+  const closureReason = 'Закрыто';
   let caseNumber: string;
   let eventDate: Date;
-  let closureReason: string;
 
   await test.step('2–3: log in as the queue operator and open Обращения', async () => {
     await controller.login(process.env.login, process.env.password);
@@ -50,6 +50,7 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
     await controller.fill('Описание', 'Жалоба про кредиту');
     await controller.selectDropdown('Канал ответа', 'SMS');
     await controller.selectLookup('Тип продукта', 'Карта Card Plus/ Card Plus');
+    await controller.selectDropdown('Происхождение', 'Бэкофис');
     await expect(controller.input('Сервис')).toHaveValue('Жалоба (3 раб. дня, 10 раб. дней)');
     await expect(page.locator('#CasePageSolutionDateProfileDateEdit-el')).not.toHaveValue('');
     await expect(page.locator('#CasePageSolutionDateProfileTimeEdit-el')).not.toHaveValue('');
@@ -146,14 +147,7 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
   await test.step('25–28: attempt closure without a solution and verify the validation error', async () => {
     await controller.changeStage('Закрыто');
     await expect(page.getByText('Укажите причину закрытия обращения', { exact: true })).toBeVisible();
-    // The specification permits any available reason; retain it for the solution-tab check.
-    await controller.control('Причина закрытия').locator('.base-edit-right-icon-wrapper').click();
-    const option = page.locator('li[data-value]:visible:not([data-value=""])').first();
-    await expect(option).toBeVisible();
-    closureReason = (await option.innerText()).trim();
-    expect(closureReason).not.toBe('');
-    await option.click();
-    await expect(controller.input('Причина закрытия')).toHaveValue(closureReason);
+    await controller.selectDropdown('Причина закрытия', closureReason);
     await controller.clickButton('Ок', true);
     await expect(page.getByText('Укажите причину закрытия обращения', { exact: true })).toBeHidden();
     const error = page.getByText(/Поле [«"“]?Решение[»"”]?: Необходимо указать значение\.?/);
