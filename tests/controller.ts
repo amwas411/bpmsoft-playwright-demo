@@ -131,6 +131,14 @@ export class Controller {
       .filter({ hasText: exactText(caption) }).click();
   }
 
+  async complaintNumber(): Promise<string> {
+    const heading = this._page.getByText(/^Обращение №\S+$/);
+    // The new-card heading is visible before its number is generated and can
+    // briefly read «Обращение №undefined». Wait for the generated value.
+    await expect(heading).toHaveText(/^Обращение №(?!undefined$|null$)\S+$/);
+    return (await heading.innerText()).replace(/^Обращение №/, '').trim();
+  }
+
   async clearSectionFilters(): Promise<void> {
     // Wait for the filter bar to finish loading the user's saved filters.
     await expect(this._page.locator('[data-item-marker="TagFilterAddButton"]')).toBeVisible();

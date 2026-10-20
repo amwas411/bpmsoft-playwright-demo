@@ -135,9 +135,7 @@ export const test = base.extend<{ scenario: Scenario }>({
       }).toPass({ timeout: 60_000, intervals: [1000, 2000, 5000] });
       await controller.openSectionInWorkplace('Сотрудник', 'Обращения');
       await controller.clickButton('Добавить обращение', true);
-      const heading = page.getByText(/^Обращение №\S+$/);
-      await expect(heading).toBeVisible();
-      const caseNumber = (await heading.innerText()).replace(/^Обращение №/, '').trim();
+      const caseNumber = await controller.complaintNumber();
       await controller.selectDropdown('Категория', 'Жалоба');
       await controller.selectLookup('Уровень 1', 'Жалобы по кредитам / Complaints by loans');
       await controller.selectLookup('Уровень 2', 'Несогласие с задолженностью по кредиту / Disagreement with loan debt');

@@ -25,10 +25,7 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
   await test.step('4: open a new complaint and verify its profile, stage, and required fields', async () => {
     await controller.clickButton('Добавить обращение', true);
     await expect(controller.button('Сохранить')).toBeVisible();
-    const heading = page.getByText(/^Обращение №\S+$/);
-    await expect(heading).toBeVisible();
-    caseNumber = (await heading.innerText()).replace(/^Обращение №/, '').trim();
-    expect(caseNumber).not.toBe('');
+    caseNumber = await controller.complaintNumber();
     for (const caption of ['Срок ответа', 'Заявитель', 'АБС Id клиента', 'Категория',
       'Уровень 1', 'Уровень 2', 'Уровень 3', 'Уровень 4', 'Сервис', 'Ответственный']) {
       // Срок ответа also exists on the information tab; check the profile explicitly.
