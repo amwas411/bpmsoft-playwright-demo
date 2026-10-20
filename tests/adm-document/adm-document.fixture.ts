@@ -146,11 +146,7 @@ export const test = base.extend<{ scenario: Scenario }>({
       await controller.fill('Описание', 'Автотест 328984: распорядительный документ');
       await controller.selectDropdown('Канал ответа', 'SMS');
       await controller.selectLookup('Тип продукта', 'Карта Card Plus/ Card Plus');
-      await controller.input('Заявитель').fill('Иванов Иван Иванович');
-      await controller.openLookup('Заявитель');
-      await page.locator('#grid-grid-wrap').locator(`[id$="${clientId}"]`).click();
-      await controller.clickButton('Выбрать', true);
-      await expect(page.locator('#grid-grid-wrap')).toBeHidden();
+      await controller.selectLookupRecord('Заявитель', 'Иванов Иван Иванович', clientId);
       await controller.save('InsertQuery');
       await expect(page.locator('[data-item-marker="CasePageContainer"]')).toBeHidden();
       let cases: Row[] = [];

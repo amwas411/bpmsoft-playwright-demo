@@ -23,15 +23,7 @@ test('administrative document: create a card instruction from a complaint', asyn
   const addButton = (scope: Locator): Locator => scope.locator('[data-item-marker="AddRecordButton"]');
 
   async function selectRecord(caption: string, value: string, id: string): Promise<void> {
-    // Identical names/numbers are permitted across isolated browser fixtures.
-    // Filter the lookup by its display value, then select this run's exact ID.
-    await controller.input(caption).fill(value);
-    await controller.openLookup(caption);
-    const grid = page.locator('#grid-grid-wrap');
-    await grid.locator(`[id$="${id}"]`).click();
-    await controller.clickButton('Выбрать', true);
-    await expect(grid).toBeHidden();
-    await expect(controller.input(caption)).toHaveValue(value);
+    await controller.selectLookupRecord(caption, value, id);
   }
 
   await test.step('2–4: open the prepared complaint and verify its initial state', async () => {

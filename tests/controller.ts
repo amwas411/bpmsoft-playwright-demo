@@ -188,6 +188,29 @@ export class Controller {
     await expect(this.input(caption)).toHaveValue(value);
   }
 
+  async selectLookupRecord(caption: string, value: string, id: string): Promise<void> {
+    await this.input(caption).fill(value);
+    await this.openLookup(caption);
+    const grid = this._page.locator('#grid-grid-wrap');
+    const record = grid.locator(`[id$="${id}"]`);
+    const rows = grid.locator('.grid-listed-row, .grid-row[data-item-marker]');
+    await expect(rows.first()).toBeVisible();
+    // Lookups initially load 30 rows. Duplicate names can put the requested
+    // record on a later page, so load more without selecting a different ID.
+    while (await record.count() === 0) {
+      const count = await rows.count();
+      await rows.last().scrollIntoViewIfNeeded();
+      const loadedMore = await expect(rows).not.toHaveCount(count, { timeout: 5000 })
+        .then(() => true, () => false);
+      if (!loadedMore) break;
+    }
+    await expect(record, `Lookup «${caption}»: record ${id}`).toBeVisible();
+    await record.click();
+    await this.clickButton('Выбрать', true);
+    await expect(grid).toBeHidden();
+    await expect(this.input(caption)).toHaveValue(value);
+  }
+
   async fillEventDate(value: Date): Promise<void> {
     const controls = this.control('Дата события').locator('input');
     const date = value.toLocaleDateString('ru-RU');
