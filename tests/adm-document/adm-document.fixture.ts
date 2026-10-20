@@ -152,8 +152,12 @@ export const test = base.extend<{ scenario: Scenario }>({
       await controller.clickButton('Выбрать', true);
       await expect(page.locator('#grid-grid-wrap')).toBeHidden();
       await controller.save('InsertQuery');
-      const cases = await data.select('Case', { Number: caseNumber }, ['Id']);
-      expect(cases).toHaveLength(1);
+      await expect(page.locator('[data-item-marker="CasePageContainer"]')).toBeHidden();
+      let cases: Row[] = [];
+      await expect(async () => {
+        cases = await data.select('Case', { Number: caseNumber }, ['Id']);
+        expect(cases, `Saved complaint ${caseNumber}`).toHaveLength(1);
+      }).toPass({ timeout: 30_000, intervals: [500, 1000, 2000] });
       const caseId = cases[0].Id;
       data.own('Case', caseId);
       // Step 4 explicitly requires an empty applicant, although the edit form

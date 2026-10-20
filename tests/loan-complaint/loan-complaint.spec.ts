@@ -85,7 +85,7 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
     await controller.fillPhone('89999999999');
     await controller.fill('Email', 'test_test11@mail.ru');
     await controller.fill('Дата рождения', '10.10.1990');
-    await controller.save('InsertQuery', true);
+    await controller.save('InsertQuery', 'Contact', true);
     await expect(controller.input('Заявитель')).toHaveValue(applicant);
     await expect(controller.input('АБС Id клиента')).toHaveValue('');
     await expect(controller.button('Назначить меня')).toBeVisible();

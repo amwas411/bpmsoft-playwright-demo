@@ -200,9 +200,10 @@ export class Controller {
     await expect(controls.nth(1)).toHaveValue(time);
   }
 
-  async save(query: 'InsertQuery' | 'UpdateQuery', confirmDuplicateContact = false): Promise<void> {
+  async save(query: 'InsertQuery' | 'UpdateQuery', schema = 'Case', confirmDuplicateContact = false): Promise<void> {
     const responsePromise = this._page.waitForResponse(response =>
-      response.url().includes(query) && response.request().method() === 'POST');
+      response.url().endsWith(`/${query}`) && response.request().method() === 'POST'
+      && response.request().postDataJSON()?.rootSchemaName === schema);
     const [response] = await Promise.all([
       responsePromise,
       (async () => {
@@ -240,7 +241,9 @@ export class Controller {
         await this.openTab('Обращения');
       }
       firstAttempt = false;
-      const rows = this._page.locator('#grid-QueuePageDataGridGrid-wrap .grid-listed-row');
+      // Queue grids can use either the listed or tiled user layout.
+      const rows = this._page.locator('#grid-QueuePageDataGridGrid-wrap')
+        .locator('.grid-listed-row, .grid-row[data-item-marker]');
       await rows.first().waitFor();
       while (await this.record(number).count() === 0) {
         const count = await rows.count();
