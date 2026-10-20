@@ -14,7 +14,7 @@ test('loan complaint: create a non-client, assign from queue, and validate closu
   let eventDate: Date;
 
   await test.step('2–3: log in as the queue operator and open Обращения', async () => {
-    await controller.login(process.env.login, process.env.password);
+    await controller.login(process.env.login, process.env.pValue);
     await controller.openSectionInWorkplace('Сотрудник', 'Обращения');
     await expect(page.getByRole('treeitem', { name: 'Обращения', exact: true })).toBeVisible();
     await expect(page.getByRole('treeitem', { name: 'Единое окно', exact: true })).toBeVisible();

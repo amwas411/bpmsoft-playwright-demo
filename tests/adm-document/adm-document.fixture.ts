@@ -102,7 +102,7 @@ export const test = base.extend<{ scenario: Scenario }>({
     const controller = new Controller(page);
     const endpointPromise = page.waitForRequest(request =>
       request.url().endsWith('/SelectQuery') && request.method() === 'POST');
-    await controller.login(process.env.login, process.env.password);
+    await controller.login(process.env.login, process.env.pValue);
     await expect(page.getByRole('button', { name: 'Сотрудник', exact: true })).toBeVisible();
     const data = new ScenarioData(page, (await endpointPromise).url());
     try {
